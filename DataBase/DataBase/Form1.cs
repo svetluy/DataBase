@@ -9,20 +9,21 @@ namespace DataBase
 {
     public partial class Form1 : Form
     {
+        List<XmlDocument> docs = new List<XmlDocument>();
+        public List<XmlDocument> Docs { get=>docs; set=> docs = value; }
+        
+        public bool IsOpen { get; set; }
+
         public Form1()
         {
             InitializeComponent();
         }
 
-        List<XmlDocument> docs = new List<XmlDocument>();
-
-        public List<XmlDocument> Docs { get => docs; set => docs = value; }
-
         private void button1_Click(object sender, EventArgs e)
         {
             //$"Data Source=10.4.24.25:1522/orcl;User Id={userId};Password={password};"
-            string oradb = $"Data Source = 127.0.0.1:1521; User Id = {textBox1.Text}; Password = {textBox2.Text};";
-            bool IsOpen;
+            // 127.0.0.1:1521 
+            string oradb = $"Data Source = {textBox3.Text}; User Id = {textBox1.Text}; Password = {textBox2.Text};";
 
             using (OracleConnection conn = new OracleConnection(oradb))
             {
@@ -36,20 +37,6 @@ namespace DataBase
                     MessageBox.Show(e1.Message);
                     IsOpen = false;
                 }
-
-                if (IsOpen)
-                {
-                    OracleCommand cmd = new OracleCommand();
-                    int i = 0;
-                    foreach (var xmlDoc in Docs)
-                    {
-                        cmd.CommandText = $"INSERT INTO xmld_buffer_xml_files VALUES ({i++}, {xmlDoc}, FILESYSTEM, TO_DATE('{DateTime.Now}','DD.MM.YYYY.MI.SS'))";
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Connection is not open");
-                }
             }
 
             //OracleDataReader dr = cmd.ExecuteReader();
@@ -61,6 +48,7 @@ namespace DataBase
         private void открытьToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string[] xmlDocs;
+
             OpenFileDialog openFile = new OpenFileDialog
             {
                 Filter = "xml docs (*.xml)|*.xml"
@@ -74,6 +62,26 @@ namespace DataBase
                     xDoc.Load(xmlDoc);
                     Docs.Add(xDoc);
                 }
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (IsOpen)
+            {
+                int i = 0;
+
+                using (OracleCommand cmd = new OracleCommand())
+                {
+                    foreach (var xmlDoc in Docs)
+                    {
+                        cmd.CommandText = $"INSERT INTO xmld_buffer_xml_files VALUES ({i++}, {xmlDoc}, FILESYSTEM, TO_DATE('{DateTime.Now}','DD.MM.YYYY.MI.SS'))";
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Connection is not open");
             }
         }
     }
