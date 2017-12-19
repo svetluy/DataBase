@@ -16,47 +16,40 @@ namespace DataBase
 
         List<XmlDocument> docs = new List<XmlDocument>();
 
+        public List<XmlDocument> Docs { get => docs; set => docs = value; }
+
         private void button1_Click(object sender, EventArgs e)
         {
             //$"Data Source=10.4.24.25:1522/orcl;User Id={userId};Password={password};"
             string oradb = $"Data Source = 127.0.0.1:1521; User Id = {textBox1.Text}; Password = {textBox2.Text};";
             bool IsOpen;
 
-            OracleConnection conn = new OracleConnection(oradb);  // C#
-            try
+            using (OracleConnection conn = new OracleConnection(oradb))
             {
-                conn.Open();
-                IsOpen = true;
-            }
-            catch (Exception e1)
-            {
-                MessageBox.Show(e1.Message);
-                IsOpen = false;
-            }
-
-            if (IsOpen)
-            {
-                OracleCommand cmd = new OracleCommand
+                try
                 {
-                    Connection = conn,
-                    CommandText = "CREATE TABLE XMLDOCS" +
-                  " (ИД NUMBER(5, 0) NOT NULL," +
-                  " ЗАЧЕТКА VARCHAR2(10) NOT NULL," +
-                  " ФИО VARCHAR2(30) NOT NULL," +
-                  " ГРУППА_ИД NUMBER(4, 0) NOT NULL," +
-                  " PRIMARY KEY(ИД)," +
-                  " FOREIGN KEY(ГРУППА_ИД) REFERENCES ГРУППЫ); ",
-                    CommandType = CommandType.Text
-                };
-
-                foreach (var xmlDoc in docs)
-                {
-                    cmd.CommandText = $"INSERT INTO XMLDOCS VALUES ({xmlDoc})";
+                    conn.Open();
+                    IsOpen = true;
                 }
-            }
-            else
-            {
-                MessageBox.Show("Connection is not open");
+                catch (Exception e1)
+                {
+                    MessageBox.Show(e1.Message);
+                    IsOpen = false;
+                }
+
+                if (IsOpen)
+                {
+                    OracleCommand cmd = new OracleCommand();
+                    int i = 0;
+                    foreach (var xmlDoc in Docs)
+                    {
+                        cmd.CommandText = $"INSERT INTO xmld_buffer_xml_files VALUES ({i++}, {xmlDoc}, FILESYSTEM, TO_DATE('{DateTime.Now}','DD.MM.YYYY.MI.SS'))";
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Connection is not open");
+                }
             }
 
             //OracleDataReader dr = cmd.ExecuteReader();
@@ -79,7 +72,7 @@ namespace DataBase
                 {
                     XmlDocument xDoc = new XmlDocument();
                     xDoc.Load(xmlDoc);
-                    docs.Add(xDoc);
+                    Docs.Add(xDoc);
                 }
             }
         }
