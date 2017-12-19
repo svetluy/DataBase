@@ -10,7 +10,7 @@ namespace DataBase
     public partial class Form1 : Form
     {
         List<XmlDocument> docs = new List<XmlDocument>();
-        public List<XmlDocument> Docs { get=>docs; set=> docs = value; }
+        public List<XmlDocument> Docs { get => docs; set => docs = value; }
         
         public bool IsOpen { get; set; }
 
@@ -31,6 +31,7 @@ namespace DataBase
                 {
                     conn.Open();
                     IsOpen = true;
+                    MessageBox.Show("Connection is open");
                 }
                 catch (Exception e1)
                 {
@@ -38,7 +39,6 @@ namespace DataBase
                     IsOpen = false;
                 }
             }
-
             //OracleDataReader dr = cmd.ExecuteReader();
             //dr.Read();
             //label1.Text = dr.GetString(0);
@@ -69,13 +69,17 @@ namespace DataBase
         {
             if (IsOpen)
             {
-                int i = 0;
-
-                using (OracleCommand cmd = new OracleCommand())
+                if (docs.Count == 0)
+                    MessageBox.Show("There is no docs");
+                else
                 {
-                    foreach (var xmlDoc in Docs)
+                    int i = 0;
+                    using (OracleCommand cmd = new OracleCommand())
                     {
-                        cmd.CommandText = $"INSERT INTO xmld_buffer_xml_files VALUES ({i++}, {xmlDoc}, FILESYSTEM, TO_DATE('{DateTime.Now}','DD.MM.YYYY.MI.SS'))";
+                        foreach (var xmlDoc in Docs)
+                        {
+                            cmd.CommandText = $"INSERT INTO xmld_buffer_xml_files (XML_ID, XML_CONTENT, XML_RESOURCE, RECORD_DATE) VALUES ({i++}, {xmlDoc}, FILESYSTEM, TO_DATE('{DateTime.Now}','DD.MM.YYYY \" \"HH24:MI:SS'))";
+                        }
                     }
                 }
             }
